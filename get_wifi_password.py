@@ -1,10 +1,8 @@
+#!/usr/bin/env python
 __author__ = 'mengwliu'
-import os
+
 import sys
-import stat
 import getopt
-import zipfile
-import urllib2
 from smtplib import SMTP_SSL as smtp
 from smtplib import SMTPException
 from email.mime.text import MIMEText
@@ -16,26 +14,16 @@ from selenium.webdriver.support import expected_conditions as EC
 
 
 def get_driver():
-    download_url = "http://chromedriver.storage.googleapis.com/2.20/chromedriver_mac32.zip"
-    directory = '/tmp/'
-    filename = 'chromedriver_mac32.zip'
-    if os.environ['PATH'].find('chromedriver') is -1 and not os.path.isfile(directory + 'chromedriver'):
-        f = urllib2.urlopen(download_url)
-        data = f.read()
-        with open(directory + filename, "wb") as code:
-            code.write(data)
-        z = zipfile.ZipFile(directory + filename)
-        z.extractall(directory)
-        st = os.stat(directory + 'chromedriver')
-        os.chmod(directory + 'chromedriver', st.st_mode | stat.S_IEXEC)
+    service_args = [
+        '--proxy=www-proxy.us.oracle.com:80',
+        '--proxy-type=html',
+    ]
+    desired_capabilities = dict(selenium.webdriver.DesiredCapabilities.PHANTOMJS)
+    desired_capabilities["phantomjs.page.settings.userAgent"] = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.111 Safari/537.36")
+    desired_capabilities["phantomjs.page.settings.Accept"] = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
 
-    chrome_driver = directory + 'chromedriver'
+    driver = selenium.webdriver.PhantomJS(service_args=service_args, desired_capabilities=desired_capabilities)
 
-    chromeOptions = selenium.webdriver.ChromeOptions()
-    prefs = {"download.default_directory": "/tmp/"}
-    chromeOptions.add_experimental_option("prefs",prefs)
-
-    driver = selenium.webdriver.Chrome(executable_path=chrome_driver, chrome_options=chromeOptions)
     return driver
 
 
@@ -93,9 +81,9 @@ def main(argv):
 
     print mima
 
-    # receivers = ["yi.t.tian@oracle.com", "shang.dang@oracle.com", "mengwei.liu@oracle.com"]
-    receivers = ["Mengwei Liu <mengwei.liu@oracle.com>"]
-    sender = 'Mengwei Liu <mengwei.liu@oracle.com>'
+    receivers = ["Sha Bi No.1 <yi.t.tian@oracle.com>", "Sha Bi No.2 <shang.dang@oracle.com>", "Chao Shuai <mengwei.liu@oracle.com>"]
+    # receivers = ["Mengwei Liu <mengwei.liu@oracle.com>"]
+    sender = 'Larry Liu <mengwei.liu@oracle.com>'
     try:
         conn = smtp('stbeehive.oracle.com')
         conn.login(username, password)
