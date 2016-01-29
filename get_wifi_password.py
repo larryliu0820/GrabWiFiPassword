@@ -1,13 +1,14 @@
 __author__ = 'mengwliu'
-import urllib2
-from BeautifulSoup import BeautifulSoup
 import os
+import sys
 import stat
+import getopt
 import zipfile
-import re
+import urllib2
+from smtplib import SMTP_SSL as smtp
+from smtplib import SMTPException
+from email.mime.text import MIMEText
 import selenium
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -38,13 +39,13 @@ def get_driver():
     return driver
 
 
-def sign_in(driver):
+def sign_in(driver, username, password):
 
     username_input = driver.find_element_by_id("sso_username")
     password_input = driver.find_element_by_id("ssopassword")
 
-    username_input.send_keys("mengwei.liu@oracle.com")
-    password_input.send_keys("APB89fUG")
+    username_input.send_keys(username)
+    password_input.send_keys(password)
 
     print ("Sign in with username and password.")
     elem = WebDriverWait(driver, 10).until(
@@ -53,14 +54,61 @@ def sign_in(driver):
     elem.click()
 
 
-def main():
+def main(argv):
+    try:
+        opts, args = getopt.getopt(argv, "hu:p:",["user=","pass="])
+    except getopt.GetoptError:
+        print 'get_wifi_password.py -u <username> -p <password>'
+        sys.exit(2)
+    for opt, arg in opts:
+        if opt == '-h':
+            print 'get_wifi_password.py -u <username> -p <password>'
+            sys.exit()
+        elif opt in ("-u", "--user"):
+            username = arg
+        elif opt in ("-p", "--pass"):
+            password = arg
+
     driver = get_driver()
     url = "https://gmp.oracle.com/captcha/"
     driver.get(url)
-    sign_in(driver)
 
-    america_btn = driver.find_element_by_id("ext-gen18")
+    sign_in(driver, username, password)
+
+    america_btn = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.ID, "ext-gen18"))
+    )
     america_btn.click()
 
-    password_text = driver.find_element_by_id("ext-gen38")
-    print password_text.text
+    password_text = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.ID, "ext-gen38"))
+    )
+
+    text = password_text.text
+    driver.quit()
+
+    for line in text.split("\n"):
+        if "Password" in line:
+            mima = line.split(" ")[1]
+
+    print mima
+
+    # receivers = ["yi.t.tian@oracle.com", "shang.dang@oracle.com", "mengwei.liu@oracle.com"]
+    receivers = ["Mengwei Liu <mengwei.liu@oracle.com>"]
+    sender = 'Mengwei Liu <mengwei.liu@oracle.com>'
+    try:
+        conn = smtp('stbeehive.oracle.com')
+        conn.login(username, password)
+        msg = MIMEText(mima)
+        msg['Subject'] = "clear-guest mima"
+        msg['From'] = sender
+        msg['To'] = ",".join(receivers)
+        conn.sendmail(sender, receivers, msg.as_string())
+        print "Successfully sent email"
+    except SMTPException as e:
+        print e.message
+        print "Error: unable to send email"
+    finally:
+        conn.close()
+
+
