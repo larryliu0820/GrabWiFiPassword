@@ -111,4 +111,7 @@ def main(argv):
     finally:
         conn.close()
 
+if __name__ == "__main__":
+   main(sys.argv[1:])
+
 
