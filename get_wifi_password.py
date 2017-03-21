@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 __author__ = 'mengwliu'
 
+<<<<<<< HEAD
 import os
+=======
+>>>>>>> 11d139878777230fd9fa88b29ed22ae181e972a4
 import sys
 import getopt
 from smtplib import SMTP_SSL as smtp
@@ -15,11 +18,22 @@ from selenium.webdriver.support import expected_conditions as EC
 
 
 def get_driver():
+<<<<<<< HEAD
+=======
+    service_args = [
+        '--proxy=www-proxy.us.oracle.com:80',
+        '--proxy-type=html',
+    ]
+>>>>>>> 11d139878777230fd9fa88b29ed22ae181e972a4
     desired_capabilities = dict(selenium.webdriver.DesiredCapabilities.PHANTOMJS)
     desired_capabilities["phantomjs.page.settings.userAgent"] = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.111 Safari/537.36")
     desired_capabilities["phantomjs.page.settings.Accept"] = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
 
+<<<<<<< HEAD
     driver = selenium.webdriver.PhantomJS(desired_capabilities=desired_capabilities)
+=======
+    driver = selenium.webdriver.PhantomJS(service_args=service_args, desired_capabilities=desired_capabilities)
+>>>>>>> 11d139878777230fd9fa88b29ed22ae181e972a4
 
     return driver
 
@@ -45,6 +59,7 @@ def main(argv):
     
     del os.environ['https_proxy']
     del os.environ['http_proxy']
+
     try:
         opts, args = getopt.getopt(argv, "hu:p:",["user=","pass="])
     except getopt.GetoptError:
